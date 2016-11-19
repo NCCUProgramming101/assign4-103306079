@@ -1,468 +1,359 @@
-PImage start2;
-PImage start1;
-PImage treasure; 
-PImage fighter;
-PImage enemy;
-PImage end2;
-PImage end1;
-PImage bullet;
-PImage bg1;
-PImage bg2; 
-PImage hp;
-float bgMoving;
-
+//You should implement your assign4 here.
+PImage bg1, bg2, bg3, bg4, enemy, fighter, hp, treasure, start1, start2, end1, end2,flame1,flame2,flame3,flame4,flame5,shoot;
 final int GAME_START = 0;
 final int GAME_RUN = 1;
-final int GAME_OVER = 2;
+final int GAME_LOSE = 2; 
+
 int gameState;
-
-final int C = 0;
-final int B = 1;
-final int A = 2;
-int enemyState;
-
-int hpX;
-PImage [] enemyPosition = new PImage [5];
-float enemyC [][] = new float [5][2];       
-float enemyB [][] = new float [5][2];
-float enemyA [][] = new float [8][2];  
-float spacingX;
-float spacingY;
-
-//flame
-int flameNum;
-int flameCurrent;
-PImage [] hit = new PImage [5];
-float hitPosition [][] = new float [5][2]; 
-
-float treasureX;
-float treasureY;
-float fighterX;
-float fighterY;
-float enemyY;
-float [] bulletX = new float [5];
-float [] bulletY = new float [5];
-
-float fighterSpeed;
-float enemySpeed;
-int bulletSpeed;
-
+int x;
+int blood;
+int treasureX, treasureY;
+int speedEnemyX=5, speedEnemyY,enemyDefaultX, enemyDefaultY;
+int fighterX, fighterY;
+int speedFighter = 5;
+int spacing = 60;
+int speedBullet = 8;
+int Num;
+float disappear;
 boolean upPressed = false;
 boolean downPressed = false;
 boolean leftPressed = false;
 boolean rightPressed = false;
+String ENEMY_STYLE;
+float[] enemy1X = new float[5];
+float[] enemy1Y = new float[5];
+float[] enemy2X = new float[5];
+float[] enemy2Y = new float[5];
+float[] enemy3X = new float[8];
+float[] enemy3Y = new float[8];
+boolean[] bulletNum = new boolean[5];
+float[] bulletX = new float[5];
+float[] bulletY = new float[5];
+PImage[] flame = new PImage[5];  
 
-//bullet number
-int bulletNum = 0;
-boolean [] bulletNumLimit = new boolean[5];
-
-void setup () {    
-  size (640,480) ;
-  frameRate(60);
-    
-  for ( int i = 0; i < 5; i++ ){
-    hit[i] = loadImage ("img/flame" + (i+1) + ".png" );
+void setup () {
+  size(640, 480);
+  bg1 = loadImage("img/bg1.png");
+  bg2 = loadImage("img/bg2.png");
+  bg3 = loadImage("img/bg1.png");
+  bg4 = loadImage("img/bg2.png");
+  enemy = loadImage("img/enemy.png");
+  fighter = loadImage("img/fighter.png");
+  hp = loadImage("img/hp.png");
+  treasure = loadImage("img/treasure.png");
+  start1 = loadImage("img/start1.png");
+  start2 = loadImage("img/start2.png");
+  end1 = loadImage("img/end1.png");
+  end2 = loadImage("img/end2.png");
+  for(int i=0;i<5;i++){
+    flame[i] = loadImage("img/flame"+(i+1)+".png");
+  }
+  shoot = loadImage("img/shoot.png");
+  
+  //background
+  image(bg2,0,0,640,480);
+  
+  //blood
+  blood = (200/100)*20;
+  
+  //random treasure position  
+  treasureX = floor(random(50,590));
+  treasureY = floor(random(50,430));
+  
+  //random enemy height
+  enemy1X[0]=0;
+  enemyDefaultY = floor(random(50,420));
+  
+  //bullet
+   for (int i =0;i<bulletNum.length;i ++){
+    bulletNum[i] = false;
   }
   
-  start2 = loadImage ("img/start2.png");
-  start1 = loadImage ("img/start1.png");  
-  bg1 = loadImage ("img/bg1.png");
-  bg2 = loadImage ("img/bg2.png");
-  hp = loadImage ("img/hp.png");
-  treasure = loadImage ("img/treasure.png");
-  fighter = loadImage ("img/fighter.png");
-  enemy = loadImage ("img/enemy.png");  
-  end2 = loadImage ("img/end2.png");
-  end1 = loadImage ("img/end1.png");
-  bullet = loadImage ("img/shoot.png");
+  //fighter position
+  fighterX = width-50;
+  fighterY = floor(random(50,430));
   
   gameState = GAME_START;
-  enemyState = C;
-  hpX = 40; 
-  treasureX = floor( random(50, width - 40) );
-  treasureY = floor( random(50, height - 60) );
-  fighterX = width - 65 ;
-  fighterY = height / 2 ; 
-
-  //speed
-  fighterSpeed = 5;
-  enemySpeed = 4;
-  bulletSpeed = 3;
-  
-  //flame
-  flameNum = 0;
-  flameCurrent = 0;
-  for ( int i = 0; i < hitPosition.length; i ++){
-    hitPosition[i][0] = 2000;
-    hitPosition[i][1] = 2000;
-  }
-
-  //no bullet
-  for (int i =0; i < bulletNumLimit.length ; i ++){
-    bulletNumLimit[i] = false;
-  }
-
-  //enemy line
-  spacingX = 0;  
-  spacingY = -60; 
-  enemyY = floor(random(80, 400));    
-  for (int i = 0; i < 5; i++){
-   enemyPosition [i] = loadImage ("img/enemy.png");  
-   enemyC [i][0] = spacingX;
-   enemyC [i][1] = enemyY; 
-   spacingX -= 80;
-  }
+  ENEMY_STYLE = "c";
 }
-
 
 void draw() {
- 
-  switch (gameState) {
+  switch(gameState){
     case GAME_START:
-      image (start1, 0, 0);     
-      if ( mouseX > 200 && mouseX < 460 
-        && mouseY > 370 && mouseY < 420){
-            image(start2, 0, 0);
-            if(mousePressed){
-              gameState = GAME_RUN;
-            }
+      image(start2,0,0,640,480);
+      if(mouseX>=150 && mouseX<=450 && mouseY>=350 && mouseY<=430){
+        image(start1,0,0,640,480);
+        if(mousePressed){
+          gameState = GAME_RUN;
+        }
       }
-    break;  
-    
-    
+      break;
     case GAME_RUN:
-      //bg
-      image (bg2, bgMoving, 0);
-      image (bg1, bgMoving-640, 0);
-      image (bg2, bgMoving-1280, 0); 
-        scoreChange();
-      bgMoving += 2;
-      bgMoving %= 1280;
-     
+      //background roll
+      if(640+x%1280>640){
+        image(bg1,-1280,0,640,480);
+      }
+      if(0+x%1280>640){
+        image(bg2,-1280,0,640,480);
+      }
+      if(1280+x%1280>640){
+        image(bg3,-1280,0,640,480);
+      }
+      if(-1280+x%1280>640){
+        image(bg4,-1280,0,640,480);
+      }
+      image(bg1,640+x%1280,0,640,480);
+      image(bg2,0+x%1280,0,640,480);
+      image(bg3,-640+x%1280,0,640,480);
+      image(bg4,-1280+x%1280,0,640,480);
+      x+=4;     
       
-      //treasure
-      image (treasure, treasureX, treasureY);    
       
-      //fighter
-      image(fighter, fighterX, fighterY);
+      //blood
+      noStroke();
+      fill(255,0,0);
+      rect(10,5,blood,20);
       
-      if (upPressed && fighterY > 0) {
-        fighterY -= fighterSpeed ;
-      }
-      if (downPressed && fighterY < 480 - 50) {
-        fighterY += fighterSpeed ;
-      }
-      if (leftPressed && fighterX > 0) {
-        fighterX -= fighterSpeed ;
-      }
-      if (rightPressed && fighterX < 640 - 50) {
-        fighterX += fighterSpeed ;
-      }  
-        
-      //flame
-      image(hit[flameCurrent], hitPosition[flameCurrent][0], hitPosition[flameCurrent][1]);      
-      flameNum ++;
-      if ( flameNum % 6 == 0){
-        flameCurrent ++;
-      } 
-      if ( flameCurrent > 4){
-        flameCurrent = 0;
-      }
-      //flame buring
-      if(flameNum > 31){
-        for (int i = 0; i < 5; i ++){
-          hitPosition[i][0] = 1000;
-          hitPosition[i][1] = 1000;
-        }
-      }   
+      //hp
+      image(hp,1,0);
       
-     //bullet
-      for (int i = 0; i < 5; i ++){
-        if (bulletNumLimit[i] == true){
-          image (bullet, bulletX[i], bulletY[i]);
-          bulletX[i] -= bulletSpeed;
-        }
-        if (bulletX[i] < - bullet.width){
-          bulletNumLimit[i] = false;
-        }
+      //treausre
+      if(((treasureX-30<=fighterX) && (fighterX<=treasureX+30))&&(treasureY-30<=fighterY)&&(fighterY<=treasureY+30)){
+        blood +=(200/100)*10;
+        if(blood>(200/100)*100){
+           blood = (200/100)*100;
+         }
+        treasureX = floor(random(50,590));
+        treasureY = floor(random(50,430));
       }
-    
-      //enemy
-      switch (enemyState) { 
-        case C :               
-          for ( int i = 0; i < 5; i++ ){
-            image(enemyPosition[i], enemyC [i][0], enemyC [i][1]);
-            //bullet hit
-            for (int j = 0; j < 5; j++ ){
-              if(bulletX[j] >= enemyC [i][0] - bullet.width && bulletX[j] <= enemyC[i][0] + enemy.width 
-                && bulletY[j] >= enemyC [i][1] - bullet.height && bulletY[j] <= enemyC [i][1] + enemy.height && bulletNumLimit[j] == true){
-                for (int k = 0;  k < 5; k++ ){
-                  hitPosition [k][0] = enemyC [i][0];
-                  hitPosition [k][1] = enemyC [i][1];
-                }    
-                enemyC [i][1] = -1000;
-                enemyY = floor(random(30,240));
-                bulletNumLimit[j] = false;
-                flameNum = 0; 
-                score+=20;
-              }
-            }  
-            //fighter get hit
-            if(fighterX >= enemyC [i][0] - fighter.width && fighterX <= enemyC[i][0] + enemy.width 
-              && fighterY >= enemyC [i][1] - fighter.height && fighterY <= enemyC [i][1] + enemy.height){
-              for (int j = 0;  j < 5; j++){
-                hitPosition [j][0] = enemyC [i][0];
-                hitPosition [j][1] = enemyC [i][1];
-              }
-              hpX -= 40;          
-              enemyC [i][1] = -1000;
-              enemyY = floor( random(30,240) );
-              flameNum = 0; 
-            }else if(hpX <= 0){
-              gameState = GAME_OVER;
-              hpX = 40;
-              score=0;
-              fighterX = (640 - 65);
-              fighterY = 480 / 2 ;
-            } else {
-              enemyC [i][0] += enemySpeed;
-              enemyC [i][0] %= 1280;
-            }      
-          }
-          //go to B
-          if (enemyC [enemyC.length-1][0] > 640+100 ) {        
-            enemyY = floor(random(30,240));            
-            spacingX = 0;  
-            for (int i = 0; i < 5; i++){
-              enemyB [i][0] = spacingX;
-              enemyB[i][1] = enemyY - spacingX / 2;
-              spacingX -= 80;                 
-            }
-            enemyState = B;
-          }
-        break ; 
-        
-        case B :
-          for (int i = 0; i < 5; i++ ){
-            image(enemyPosition[i], enemyB [i][0] , enemyB [i][1]);
-            //bullet hit
-            for(int j = 0; j < 5; j++){
-              if ( bulletX[j] >= enemyB [i][0] - bullet.width && bulletX[j] <= enemyB[i][0] + enemy.width 
-                && bulletY[j] >= enemyB [i][1] - bullet.height && bulletY[j] <= enemyB [i][1] + enemy.height && bulletNumLimit[j] == true){
-                for(int k = 0;  k < 5; k++ ){
-                  hitPosition [k][0] = enemyB [i][0];
-                  hitPosition [k][1] = enemyB [i][1];
-                }     
-                enemyB [i][1] = -1000;
-                enemyY = floor(random(30,240));
-                bulletNumLimit[j] = false;
-                flameNum = 0;
-                score+=20;
-              }
+      image(treasure,treasureX,treasureY);
+      
+      //bullet
+       if(keyCode==' '){
+            if (bulletNum[Num] == false){
+              bulletNum[Num] = true;
+              bulletX[Num] = fighterX-30;
+              bulletY[Num] = fighterY+15;
+              Num++;
             }   
-            //fighter get hit
-            if ( fighterX >= enemyB [i][0] - fighter.width && fighterX <= enemyB[i][0] + enemy.width 
-              && fighterY >= enemyB [i][1] - fighter.height && fighterY <= enemyB [i][1] + enemy.height){
-              for (int j = 0;  j < 5; j++ ){
-                 hitPosition [j][0] = enemyB [i][0];
-                 hitPosition [j][1] = enemyB [i][1];
-               }
-              enemyB [i][1] = -1000;
-              enemyY = floor(random(200,280));
-              flameNum = 0; 
-              hpX -= 40;
-            }else if(hpX<= 0){
-              gameState = GAME_OVER;
-              hpX = 40;
-              score=0;
-              fighterX = (640 - 65);
-              fighterY = 480 / 2 ;
-            } else {
-              enemyB [i][0] += enemySpeed;
-              enemyB [i][0] %= 1280;
-            }         
-          }
-          
-          //go to A
-          if (enemyB [4][0] > 640 + 100){
-            enemyY = floor( random(200,280) );
-            enemyState = A;            
-            spacingX = 0;  
-            spacingY = -60; 
-            for ( int i = 0; i < 8; i ++ ) {
-              if ( i < 3 ) {
-                enemyA [i][0] = spacingX;
-                enemyA [i][1] = enemyY - spacingX;
-                spacingX -= 60;
-              } else if ( i == 3 ){
-                enemyA [i][0] = spacingX;
-                enemyA [i][1] = enemyY - spacingY;
-                spacingX -= 60;
-                spacingY += 60;
-              } else if ( i > 3 && i <= 5 ){
-                  enemyA [i][0] = spacingX;
-                  enemyA [i][1] = enemyY + spacingY;
-                  spacingX += 60;
-                  spacingY -= 60;
-              } else {
-                  enemyA [i][0] = spacingX;
-                  enemyA [i][1] = enemyY + spacingY;
-                  spacingX += 60;
-                  spacingY += 60;
-              }            
-            }     
-          }
-        break ;        
-        
-        case A :  
-          for( int i = 0; i < 8; i++ ){
-            image(enemy, enemyA [i][0], enemyA [i][1]);     
-            //bullet hit     
-            for( int j = 0; j < 5; j++ ){
-              if ( bulletX[j] >= enemyA [i][0] - bullet.width && bulletX[j] <= enemyA [i][0] + enemy.width 
-                && bulletY[j] >= enemyA [i][1] - bullet.height && bulletY[j] <= enemyA [i][1] + enemy.height && bulletNumLimit[j] == true){
-            
-                  for (int s = 0;  s < 5; s++){
-                  hitPosition [s][0] = enemyA [i][0];
-                  hitPosition [s][1] = enemyA [i][1];
-                }
-                enemyA [i][1] = -1000;
-                enemyY = floor( random(30,240));
-                bulletNumLimit[j] = false;
-                flameNum = 0; 
-                score+=20;
-              }
-            }       
-            //fighter get hit
-            if ( fighterX >= enemyA [i][0] - fighter.width && fighterX <= enemyA[i][0] + enemy.width 
-              && fighterY >= enemyA [i][1] - fighter.height  && fighterY <= enemyA [i][1] + enemy.height){ 
-              for ( int j = 0;  j < 5; j++ ){
-                hitPosition [j][0] = enemyA [i][0];
-                hitPosition [j][1] = enemyA [i][1];
-              }
-              hpX -= 40;
-              enemyA [i][1] = -1000;
-              enemyY = floor(random(50,420));
-              flameNum = 0; 
-            } else if ( hpX <= 0 ) {
-              gameState = GAME_OVER;
-              hpX = 40;
-              fighterX = 575 ;
-              fighterY = 480/2 ;
-              score=0;
-            } else {
-              enemyA [i][0] += enemySpeed;
-              enemyA [i][0] %= 1920;
-            }     
-          }
-          
-          //go to C
-          if(enemyA [4][0] > 640 + 300 ){
-            enemyY = floor(random(80,400));
-            spacingX = 0;       
-            for (int i = 0; i < 5; i++ ){
-              enemyC [i][1] = enemyY; 
-              enemyC [i][0] = spacingX;
-              spacingX -= 80;
-            } 
-            enemyState = C;            
-          }  
-        break ;
-      }
-
-     //hp
-      fill (#FF0000);
-      rect (35, 15, hpX, 30);
-      image(hp, 28, 15);   
-      //get treasure
-      if(fighterX >= treasureX - fighter.width && fighterX <= treasureX + treasure.width
-         && fighterY >= treasureY - fighter.height && fighterY <= treasureY + treasure.height){    
-              hpX += 20;
-              treasureX = floor(random(50,600));         
-              treasureY = floor(random(50,420));
-      }
-      if(hpX >= 200){
-        hpX = 200;
-      }
-    break ;  
-    
-    
-    case GAME_OVER :
-      image(end1, 0, 0);     
-      if ( mouseX > 200 && mouseX < 470 
-        && mouseY > 300 && mouseY < 350){
-            image(end2, 0, 0);
-            if(mousePressed){
-              treasureX = floor( random(50,600) );
-              treasureY = floor( random(50,420) );      
-              enemyState = 0;      
-              spacingX = 0;       
-              for (int i = 0; i < 5; i++ ){
-                hitPosition [i][0] = 1000;
-                hitPosition [i][1] = 1000;
-                bulletNumLimit[i] = false;
-                enemyC [i][0] = spacingX;
-                enemyC [i][1] = enemyY; 
-                spacingX -= 80;
-              }
-              gameState = GAME_RUN;
+            if (Num>4) {
+              Num = 0;
             }
+        }
+      for (int i=0;i<Num;i++){
+        if (bulletNum[i] == true){
+          image (shoot, bulletX[i], bulletY[i]);
+        }
+        bulletX[i]-=speedBullet;
+        if (bulletX[i] < -width){
+          bulletNum[i] = false;
+        }
       }
-    break ;
-  }  
+            
+      
+      //enemy assign 4
+      switch (ENEMY_STYLE){
+        case "c":
+          if(enemy1X[0]-4*spacing>=640){
+              enemy1X[0]=0;
+              enemyDefaultY = floor(random(50,420-4*spacing));
+              ENEMY_STYLE = "b";
+            }else{
+              enemy1X[0]+=speedEnemyX;
+              for(int i=0;i<enemy1X.length;i++){  
+                enemy1X[i]=enemy1X[0]-spacing*i;
+                enemy1Y[i]=enemyDefaultY;
+                if((enemy1X[i]-30<=fighterX) && (fighterX<=enemy1X[i]+30) && (enemy1Y[i]-30<=fighterY) && (fighterY<=enemy1Y[i]+30)){
+                  blood -=(200/100)*20;
+                  disappear = enemy1X[i]+1000;               
+                  image(enemy,disappear,enemy1Y[i]+1000);
+                  for(int j=0;j<flame.length;j++){
+                      image(flame[j],enemy1X[i],enemy1Y[i]);
+                      frameRate(100);
+                      }
+                     if(blood<=0){
+                        gameState = GAME_LOSE;
+                       }
+                  }
+                  for(int j=0;j<Num;j++){
+                    if((enemy1X[i]-30<=bulletX[j]) && (bulletX[i]<=enemy1X[i]+30) && (enemy1Y[i]-30<=bulletY[i]) && (bulletY[i]<=enemy1Y[i]+30)){
+                      disappear = enemy1X[i]+1000; 
+                      image(enemy,disappear,enemy1Y[i]+1000);
+                      for(int k=0;k<flame.length;k++){
+                        image(flame[k],enemy1X[i],enemy1Y[i]);
+                        frameRate(100);
+                        }
+                        bulletNum[j] = false;
+                    }
+                  }
+                image(enemy,enemy1X[i],enemy1Y[i]);              
+              }
+           }           
+          break;
+        case "b":
+          if(enemy2X[0]-4*spacing>=640){
+              enemy2X[0]=0;
+              enemyDefaultY = floor(random(50+2*spacing,420-2*spacing));
+              ENEMY_STYLE = "a";
+            }else{
+              enemy2X[0]+=speedEnemyX;
+              for(int i=0;i<enemy2X.length;i++){  
+                enemy2X[i]=enemy2X[0]-spacing*i;
+                enemy2Y[i]=enemyDefaultY+spacing*i;
+                if((enemy2X[i]-30<=fighterX) && (fighterX<=enemy2X[i]+30) && (enemy2Y[i]-30<=fighterY) && (fighterY<=enemy2Y[i]+30)){
+                  blood -=(200/100)*20; 
+                  println(enemy2X[i]);
+                  disappear = enemy2X[i]+1000;
+                  image(enemy,disappear,enemy2Y[i]);
+                  for(int j=0;j<flame.length;j++){
+                      image(flame[j],enemy2X[i],enemy2Y[i]+1000);
+                      frameRate(100);
+                      }
+                     if(blood<=0){
+                        gameState = GAME_LOSE;
+                       }  
+                  }
+                  for(int j=0;j<Num;j++){
+                    if((enemy1X[i]-30<=bulletX[j]) && (bulletX[i]<=enemy1X[i]+30) && (enemy1Y[i]-30<=bulletY[i]) && (bulletY[i]<=enemy1Y[i]+30)){
+                      disappear = enemy1X[i]+1000; 
+                      image(enemy,disappear,enemy1Y[i]+1000);
+                      for(int k=0;k<flame.length;k++){
+                        image(flame[k],enemy1X[i],enemy1Y[i]);
+                        frameRate(100);
+                        }
+                        bulletNum[j] = false;
+                    }
+                  }
+                image(enemy,enemy2X[i],enemy2Y[i]);
+             }
+           }
+           break;
+         case "a": 
+           if(enemy3X[0]-4*spacing>=640){
+              enemy3X[0]=0;
+              enemyDefaultY = floor(random(50,420));
+              ENEMY_STYLE = "c";
+            }else{
+              enemy3X[0]+=speedEnemyX;
+              for(int i=0;i<8;i++){
+                if(i-4==3||i-4==-3){
+                    enemy3X[i] = enemy3X[0]-spacing*1;
+                    enemy3Y[i] = enemyDefaultY-spacing*1/3*(i-4);                  
+                   }else if(i-4==2||i-4==-2){
+                      enemy3X[i] = enemy3X[0]-spacing*2;
+                      enemy3Y[i] = enemyDefaultY-spacing*(i-4);
+                   }else if(i-4==1||i-4==-1){
+                      enemy3X[i] = enemy3X[0]-spacing*3;
+                      enemy3Y[i] = enemyDefaultY-spacing*(i-4);
+                   }else{
+                     enemy3X[i] = enemy3X[0]-spacing*i;
+                     enemy3Y[i] = enemyDefaultY;
+                   }
+                 if((enemy3X[i]-30<=fighterX) && (fighterX<=enemy3X[i]+30) && (enemy3Y[i]-30<=fighterY) && (fighterY<=enemy3Y[i]+30)){
+                      blood -=(200/100)*20;
+                      println(enemy3X[i]);
+                      disappear = enemy3X[i]+1000;
+                      image(enemy,disappear,enemy3Y[i]+1000);
+                      for(int j=0;j<flame.length;j++){
+                        image(flame[j],enemy3X[i],enemy3Y[i]);
+                        frameRate(100);
+                        }
+                       if(blood<=0){
+                          gameState = GAME_LOSE;
+                         }  
+                    }
+                   for(int j=0;j<Num;j++){
+                      if((enemy1X[i]-30<=bulletX[j]) && (bulletX[i]<=enemy1X[i]+30) && (enemy1Y[i]-30<=bulletY[i]) && (bulletY[i]<=enemy1Y[i]+30)){
+                        disappear = enemy1X[i]+1000; 
+                        image(enemy,disappear,enemy1Y[i]+1000);
+                        for(int k=0;k<flame.length;k++){
+                          image(flame[k],enemy1X[i],enemy1Y[i]);
+                          frameRate(100);
+                          }
+                          bulletNum[j] = false;
+                      }
+                    }
+               image(enemy,enemy3X[i],enemy3Y[i]);
+              }
+           }
+           break;
+       } 
+      //fighter
+      if(upPressed){
+        fighterY -= speedFighter;
+        while(fighterY<0){
+          fighterY = 0;
+          break;
+        }
+      }
+      if(downPressed){
+        fighterY += speedFighter;
+        while(fighterY>height-50){
+          fighterY = height-50;
+          break;
+        }
+      }
+      if(leftPressed){
+        fighterX -= speedFighter;
+        while(fighterX<0){
+          fighterX = 0;
+          break;
+        }
+      }
+      if(rightPressed){
+        fighterX += speedFighter;
+        while(fighterX>width-50){
+          fighterX = width-50;
+          break;
+        }
+      }
+      image(fighter,fighterX,fighterY);
+      break;
+    case GAME_LOSE:
+      image(end2,0,0,640,480);
+      if(mouseX>=180 && mouseX<=450 && mouseY>=280 && mouseY<=360){
+        image(end1,0,0,640,480);
+        if(mousePressed){
+          setup();
+          gameState = GAME_START;
+        }
+       }
+     break;
+  }
 }
-
-
-void keyPressed (){
-  if (key == CODED) {
-    switch ( keyCode ) {
-      case UP :
-        upPressed = true ;
-        break ;
-      case DOWN :
-        downPressed = true ;
-        break ;
-      case LEFT :
-        leftPressed = true ;
-        break ;
-      case RIGHT :
-        rightPressed = true ;
-        break ;
+void keyPressed(){
+  if(key== CODED){
+    switch(keyCode){
+      case UP:
+        upPressed = true;
+        break;
+      case DOWN:
+        downPressed = true;
+        break;
+      case LEFT:
+        leftPressed = true;
+        break;
+      case RIGHT:
+        rightPressed = true;
+        break;
     }
   }
 }
-     
-
-  
-void keyReleased () {
-  if (key == CODED) {
-    switch ( keyCode ) {
-      case UP : 
-        upPressed = false ;
-        break ;
-      case DOWN :
-        downPressed = false ;
-        break ;
-      case LEFT :
-        leftPressed = false ;
-        break ;
-      case RIGHT :
-        rightPressed = false ;
-        break ;
-    }  
-  }  
-  //shoot bullet
-  if ( keyCode == ' '){
-    if (gameState == GAME_RUN){
-      if (bulletNumLimit[bulletNum] == false){
-        bulletNumLimit[bulletNum] = true;
-        bulletX[bulletNum] = fighterX - 10;
-        bulletY[bulletNum] = fighterY + fighter.height/2;
-        bulletNum ++;
-      }   
-      if ( bulletNum > 4 ) {
-        bulletNum = 0;
-      }
+void keyReleased(){
+   if(key== CODED){
+    switch(keyCode){
+      case UP:
+        upPressed = false;
+        break;
+      case DOWN:
+        downPressed = false;
+        break;
+      case LEFT:
+        leftPressed = false;
+        break;
+      case RIGHT:
+        rightPressed = false;
+        break;
     }
   }
 }
